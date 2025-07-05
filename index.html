@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>BSE Stock Prediction Platform</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .stock-input {
+      display: flex;
+      margin-bottom: 20px;
+    }
+    #stockSymbol {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-left: 10px;
+    }
+    button:hover {
+      background-color: #3367d6;
+    }
+    .report-container {
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 4px;
+      background-color: #f9f9f9;
+      min-height: 200px;
+    }
+    .loading {
+      color: #666;
+      font-style: italic;
+      text-align: center;
+      padding: 20px;
+    }
+    .error {
+      color: #d32f2f;
+      padding: 20px;
+      text-align: center;
+    }
+    h2 {
+      color: #4285f4;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 10px;
+    }
+    .stock-selector {
+      margin-bottom: 20px;
+    }
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+      color: #666;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>BSE Stock Prediction Platform</h1>
+      <p>Comprehensive stock analysis and prediction reports for BSE-listed companies</p>
+    </div>
+
+    <div class="stock-selector">
+      <div class="stock-input">
+        <input type="text" id="stockSymbol" placeholder="Enter BSE Symbol (e.g., RELIANCE.BO)">
+        <button onclick="generateReport()">Generate Report</button>
+      </div>
+    </div>
+
+    <div class="report-container" id="reportContainer">
+      <p>Enter a stock symbol and click "Generate Report" to view the investment report.</p>
+    </div>
+
+    <div class="footer">
+      <p>Data provided for informational purposes only. Not investment advice.</p>
+    </div>
+  </div>
+
+  <script>
+    // Configuration - replace with your actual URLs
+    const API_BASE_URL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";
+
+    async function generateReport() {
+      const symbol = document.getElementById('stockSymbol').value.trim().toUpperCase();
+      if (!symbol) {
+        alert('Please enter a stock symbol');
+        return;
+      }
+
+      // Add .BO suffix if not present (for BSE stocks)
+      const fullSymbol = symbol.endsWith('.BO') ? symbol : `${symbol}.BO`;
+
+      const reportContainer = document.getElementById('reportContainer');
+      reportContainer.innerHTML = '<p class="loading">Generating report... This may take a few moments.</p>';
+
+      try {
+        const response = await fetch(`${API_BASE_URL}?symbol=${encodeURIComponent(fullSymbol)}`);
+        const data = await response.json();
+
+        if (data.error) {
+          reportContainer.innerHTML = `<p class="error">Error: ${data.error}</p>`;
+        } else {
+          // Format the report for display
+          const formattedReport = formatReport(data.report);
+          reportContainer.innerHTML = formattedReport;
+        }
+      } catch (error) {
+        reportContainer.innerHTML = `<p class="error">Error fetching report: ${error.message}</p>`;
+      }
+    }
+
+    function formatReport(reportText) {
+      // Basic formatting - you can enhance this with proper HTML formatting
+      return `
+        <div class="report-content">
+          <h2>Investment Report</h2>
+          <div class="report-text">${formatText(reportText)}</div>
+        </div>
+      `;
+    }
+
+    function formatText(text) {
+      // Simple formatting - replace newlines with <br> and add some basic HTML structure
+      return text
+        .replace(/\n/g, '<br><br>')  // Replace newlines with double breaks
+        .replace(/## (.*?)\n/g, '<h3>$1</h3>')  // Format ## headers
+        .replace(/### (.*?)\n/g, '<h4>$1</h4>')  // Format ### headers
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // Format bold text
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')  // Format italic text
+        .replace(/`(.*?)`/g, '<code>$1</code>');  // Format code
+    }
+  </script>
+</body>
+</html>
